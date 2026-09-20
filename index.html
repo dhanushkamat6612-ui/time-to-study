@@ -4,123 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SnapLearn • Liquid Glass Library</title>
-<meta name="description" content="Offline-first Liquid Glass LMS Dashboard with unlimited textbook uploads. Runs on GitHub Pages.">
+<meta name="description" content="Offline-first Liquid Glass LMS. Runs on GitHub Pages.">
 
-<!-- 1. TAILWIND + FONTS + ICONS (CDN) -->
+<!-- TAILWIND CDN (Compiles in browser) -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script defer src="https://cdn.lucide.dev/latest/lucide.min.js"></script>
 
-<!-- 2. EXTERNAL LIBS (ESM) - Imported in Script Module below -->
-<!-- pdfjs-dist, epubjs, marked, idb, dompurify -->
-
-<!-- 3. LIQUID GLASS DESIGN SYSTEM (CSS Variables & Utility Classes) -->
+<!-- CRITICAL: Inline CSS for Instant Paint (No FOUC) -->
 <style>
-/* ==========================================
-   LIQUID GLASS DESIGN TOKENS
-   ========================================== */
+/* ===== LIQUID GLASS DESIGN TOKENS ===== */
 :root {
-  /* Dark Mode Default (Liquid Glass feels best on dark) */
-  --bg-deep: #0a0c12;
-  --bg-base: #0f1119;
-  --fg-primary: #f1f5f9;
-  --fg-muted: #94a3b8;
-  --fg-subtle: #64748b;
-  --accent: #6366f1; --accent-glow: #818cf8;
-  --accent-2: #ec4899; --accent-2-glow: #f472b6;
-  --glass-bg: rgba(15, 18, 25, 0.55);
-  --glass-bg-strong: rgba(15, 18, 25, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-hover: rgba(255, 255, 255, 0.05);
+  --bg-deep: #0a0c12; --bg-base: #0f1119; --fg-primary: #f1f5f9; --fg-muted: #94a3b8; --fg-subtle: #64748b;
+  --accent: #6366f1; --accent-glow: #818cf8; --accent-2: #ec4899;
+  --glass-bg: rgba(15, 18, 25, 0.55); --glass-bg-strong: rgba(15, 18, 25, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08); --glass-highlight: rgba(255, 255, 255, 0.12);
   --shadow-glass: 0 4px 30px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03);
   --shadow-glass-hover: 0 12px 50px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
   --radius-xl: 1.25rem; --radius-2xl: 1.5rem;
-  --font-sans: 'Geist', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Geist', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace;
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+html.light { --bg-deep: #f8fafc; --bg-base: #ffffff; --fg-primary: #0f172a; --fg-muted: #475569; --fg-subtle: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.65); --glass-bg-strong: rgba(255, 255, 255, 0.85); --glass-border: rgba(15, 23, 42, 0.06); --glass-highlight: rgba(255, 255, 255, 0.5); --shadow-glass: 0 4px 30px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.5); --shadow-glass-hover: 0 12px 50px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8); }
+html.sepia { --bg-deep: #fdf6e3; --bg-base: #fefae0; --fg-primary: #433422; --fg-muted: #6b5b3a; --glass-bg: rgba(254, 250, 224, 0.7); --glass-border: rgba(44, 32, 16, 0.1); }
 
-/* Light Mode Override */
-html.light {
-  --bg-deep: #f8fafc; --bg-base: #ffffff;
-  --fg-primary: #0f172a; --fg-muted: #475569; --fg-subtle: #94a3b8;
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-bg-strong: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(15, 23, 42, 0.06);
-  --glass-highlight: rgba(255, 255, 255, 0.5);
-  --glass-hover: rgba(15, 23, 42, 0.03);
-  --shadow-glass: 0 4px 30px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.5);
-  --shadow-glass-hover: 0 12px 50px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
-}
-
-/* ==========================================
-   BASE & RESET
-   ========================================== */
+/* ===== BASE ===== */
 *, *::before, *::after { box-sizing: border-box; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+html, body, #app { height: 100%; width: 100%; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-deep); color: var(--fg-primary); -webkit-font-smoothing: antialiased; overflow: hidden; background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(236, 72, 153, 0.1), transparent); background-attachment: fixed; }
 
-html, body, #root { height: 100%; width: 100%; margin: 0; padding: 0; }
-body {
-  font-family: var(--font-sans);
-  background: var(--bg-deep);
-  color: var(--fg-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* App handles scrolling */
-  background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(236, 72, 153, 0.1), transparent);
-  background-attachment: fixed;
-}
+/* ===== GLASS UTILITIES ===== */
+.glass { background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-glass); position: relative; overflow: hidden; transition: all var(--transition-smooth); }
+.glass-strong { background: var(--glass-bg-strong); border-color: var(--glass-highlight); box-shadow: var(--shadow-glass-hover); }
+.glass-float { backdrop-filter: blur(60px) saturate(200%); -webkit-backdrop-filter: blur(60px) saturate(200%); }
 
-/* ==========================================
-   GLASS UTILITIES (Reusable via Class)
-   ========================================== */
-.glass-pane {
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-glass);
-  position: relative; overflow: hidden;
-  transition: all var(--transition-smooth);
-}
-.glass-pane-elevated { background: var(--glass-bg-strong); border-color: var(--glass-highlight); box-shadow: var(--shadow-glass-hover); }
-.glass-pane-floating { backdrop-filter: blur(60px) saturate(200%); -webkit-backdrop-filter: blur(60px) saturate(200%); }
+/* Noise Texture */
+.glass::before, .glass-strong::before, .glass-float::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); border-radius: inherit; }
 
-/* Noise Texture Overlay (The "Grain" of real glass) */
-.glass-pane::before, .glass-pane-elevated::before, .glass-pane-floating::before {
-  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  border-radius: inherit;
-}
-
-/* Specular Highlight (The "Shine" on hover) */
+/* Specular Highlight (Mouse Shine) */
 .specular { --mx: 50%; --my: 50%; }
-.specular::after {
-  content: ""; position: absolute; inset: -50%; z-index: 2; pointer-events: none; opacity: 0;
-  background: radial-gradient(ellipse at var(--mx) var(--my), rgba(255,255,255,0.1) 0%, transparent 65%);
-  border-radius: inherit; transition: opacity 0.4s ease;
-}
+.specular::after { content: ""; position: absolute; inset: -50%; z-index: 2; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at var(--mx) var(--my), rgba(255,255,255,0.1) 0%, transparent 65%); border-radius: inherit; transition: opacity 0.4s ease; }
 .specular:hover::after { opacity: 1; }
 
-/* Inner Bevel Highlight (Top/Left Edge) */
-.glass-pane > .inner-glow, .glass-pane-elevated > .inner-glow, .glass-pane-floating > .inner-glow {
-  position: absolute; inset: 0; pointer-events: none; z-index: 3; border-radius: inherit; overflow: hidden;
-}
-.glass-pane > .inner-glow::before, .glass-pane-elevated > .inner-glow::before, .glass-pane-floating > .inner-glow::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-}
-.glass-pane > .inner-glow::after, .glass-pane-elevated > .inner-glow::after, .glass-pane-floating > .inner-glow::after {
-  content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
-}
+/* Inner Bevel */
+.glass > .glow, .glass-strong > .glow, .glass-float > .glow { position: absolute; inset: 0; pointer-events: none; z-index: 3; border-radius: inherit; overflow: hidden; }
+.glass > .glow::before, .glass-strong > .glow::before, .glass-float > .glow::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); }
+.glass > .glow::after, .glass-strong > .glow::after, .glass-float > .glow::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent); }
 
 /* Scrollbars */
 .glass-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -128,414 +59,290 @@ body {
 .glass-scroll::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; border: 2px solid transparent; background-clip: content-box; }
 .glass-scroll::-webkit-scrollbar-thumb:hover { background: var(--glass-highlight); }
 
-/* ==========================================
-   ANIMATIONS
-   ========================================== */
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-@keyframes shimmer { 100% { transform: translateX(100%); } }
+/* Animations */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-.animate-float { animation: float 6s ease-in-out infinite; }
-.animate-shimmer::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); transform: translateX(-100%); animation: shimmer 2s infinite; }
 .animate-fade-up { animation: fadeUp 0.6s var(--transition-smooth) forwards; opacity: 0; }
-.delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+.delay-1 { animation-delay: 0.05s; } .delay-2 { animation-delay: 0.1s; } .delay-3 { animation-delay: 0.15s; } .delay-4 { animation-delay: 0.2s; }
+.animate-spin { animation: spin 1s linear infinite; }
 
-/* Focus Visible */
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-
-/* Reader Specific */
+/* Reader Content */
 .reader-view { font-family: var(--font-sans); line-height: 1.75; font-size: 1.125rem; color: var(--fg-primary); }
 .reader-view h1, .reader-view h2, .reader-view h3 { line-height: 1.3; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; color: var(--fg-primary); }
 .reader-view h1 { font-size: 2.25rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
 .reader-view h2 { font-size: 1.75rem; }
-.reader-view p { margin: 1em 0; text-align: justify; text-justify: inter-word; }
+.reader-view p { margin: 1em 0; text-align: justify; }
 .reader-view code { font-family: var(--font-mono); background: var(--glass-bg); padding: 0.15em 0.4em; border-radius: 0.25rem; font-size: 0.9em; border: 1px solid var(--glass-border); }
 .reader-view pre { background: #05070c; border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 1.5rem; overflow-x: auto; margin: 1.5rem 0; }
 .reader-view pre code { background: transparent; padding: 0; border: none; font-size: 0.875rem; line-height: 1.6; }
 .reader-view blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; margin: 1.5rem 0; color: var(--fg-muted); font-style: italic; }
 .reader-view img { max-width: 100%; border-radius: var(--radius-xl); margin: 1.5rem auto; display: block; box-shadow: var(--shadow-glass); }
-.reader-view a { color: var(--accent-glow); text-decoration: none; border-bottom: 1px dashed transparent; transition: border-color 0.2s; }
-.reader-view a:hover { border-bottom-color: var(--accent-glow); }
 
-/* Septia Theme for Reader */
-html.sepia .reader-view { --fg-primary: #433422; --bg-deep: #fdf6e3; --bg-base: #fefae0; color: #433422; }
+/* Sepia Reader Override */
+html.sepia .reader-view { --fg-primary: #433422; color: #433422; }
 html.sepia .reader-view h1, html.sepia .reader-view h2, html.sepia .reader-view h3 { color: #2c2010; }
 html.sepia .reader-view code { background: #e8dfc9; border-color: #d4c9b0; }
 html.sepia .reader-view pre { background: #2c2010; border-color: #d4c9b0; }
 html.sepia .reader-view blockquote { border-color: #d4a843; color: #6b5b3a; }
-html.sepia .glass-pane { --glass-bg: rgba(254, 250, 224, 0.7); --glass-border: rgba(44, 32, 16, 0.1); --glass-highlight: rgba(255,255,255,0.5); box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
-html.sepia body { background: #fdf6e3; background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 168, 67, 0.15), transparent); }
 
+/* Focus */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 </style>
 </head>
 <body class="h-full flex overflow-hidden">
 
-<!-- ROOT CONTAINER -->
+<!-- ROOT: Shows Loading State instantly via CSS -->
 <div id="app" class="flex h-full w-full relative z-10">
-  <!-- Sidebar Injected Here -->
-  <!-- Main Content Injected Here -->
-  <!-- Reader Modal Injected Here -->
+  <!-- Fallback Loading UI (Visible until JS hydrates) -->
+  <div id="loading-shell" class="flex w-full h-full items-center justify-center bg-[var(--bg-deep)] transition-opacity duration-500">
+    <div class="text-center p-8">
+      <div class="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-slate-400 font-medium">Initializing Liquid Glass Engine...</p>
+      <p class="text-xs text-slate-600 mt-2 max-w-xs mx-auto">Loading IndexedDB, PDF.js, EPUB.js...</p>
+    </div>
+  </div>
+  
+  <!-- Error Boundary UI (Hidden by default) -->
+  <div id="error-shell" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--bg-deep)]">
+    <div class="glass-strong p-8 max-w-md w-full text-center border-red-500/50">
+      <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <h2 class="text-xl font-bold mb-2">Application Error</h2>
+      <pre id="error-msg" class="text-left text-sm text-red-300 bg-black/50 p-4 rounded-lg overflow-auto max-h-60 font-mono"></pre>
+      <button onclick="location.reload()" class="mt-6 glass specular px-6 py-2 rounded-lg font-medium">Reload App</button>
+    </div>
+  </div>
 </div>
 
-<!-- SERVICE WORKER REGISTRATION -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {}); // Fail silently if SW not found
-    });
-  }
-</script>
-
-<!-- MAIN APPLICATION MODULE -->
+<!-- MAIN APPLICATION MODULE (type=module = deferred automatically) -->
 <script type="module">
-import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@7/+esm';
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/+esm';
-import { default as Epub } from 'https://cdn.jsdelivr.net/npm/epubjs@0.3.93/+esm';
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@12/+esm';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3/+esm';
+// ==========================================
+// GLOBAL ERROR HANDLING (Visual Feedback)
+// ==========================================
+window.addEventListener('error', e => showFatalError(e.error || e.message));
+window.addEventListener('unhandledrejection', e => showFatalError(e.reason));
+function showFatalError(err) {
+  console.error('[FATAL]', err);
+  document.getElementById('loading-shell').style.display = 'none';
+  document.getElementById('error-shell').classList.remove('hidden');
+  document.getElementById('error-msg').textContent = err.stack || String(err);
+}
 
 // ==========================================
-// CONFIGURATION
+// ICON SYSTEM (Zero Dependency, Inline SVG)
 // ==========================================
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
-const DB_NAME = 'SnapLearnDB';
-const STORE_BOOKS = 'books';
-const STORE_PROGRESS = 'progress';
+const Icons = {
+  book: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>',
+  chevronLeft: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>',
+  chevronRight: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>',
+  menu: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>',
+  x: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>',
+  search: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>',
+  upload: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>',
+  download: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>',
+  globe: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>',
+  settings: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  clock: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+  flame: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0118 13c0 3.466-4 6.171-6 7.485l-1.2-1.2a8 8 0 004.857-5.628z"/>',
+  trophy: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
+  star: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>',
+  library: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>',
+  list: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>',
+  grid: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>',
+  trendingUp: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l4-4m0 0l4-4m-4 4h18"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18"/>',
+  sun: '<circle cx="12" cy="12" r="5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>',
+  moon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>',
+  monitor: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>',
+  coffee: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h1a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-1"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h12"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12v8"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12v8"/>',
+  play: '<polygon points="5 3 19 12 5 21 5 3"/>',
+  trash2: '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>',
+  palette: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-1a2 2 0 012-2h2a2 2 0 012 2v1a2 2 0 00-2 2h-12z"/><circle cx="10" cy="10" r="2"/><circle cx="18" cy="10" r="2"/><circle cx="14" cy="16" r="2"/>',
+  database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  alertTriangle: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01"/>',
+  bookOpen: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>',
+  minus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/>',
+};
+function Icon(name, cls = 'w-5 h-5') {
+  const path = Icons[name] || Icons.book;
+  return `<svg class="${cls} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+}
 
 // ==========================================
-// INDEXEDDB WRAPPER (Unlimited Storage)
+// STATE & REACTIVITY
+// ==========================================
+const state = {
+  view: 'dashboard', sidebarOpen: true, sidebarCollapsed: false, theme: 'dark',
+  books: [], selectedBook: null, isUploading: false, uploadProgress: 0,
+  stats: { totalBooks: 0, totalHours: 0, streak: 0, xp: 0 },
+  reader: { type: null, currentLocation: null, totalPages: 0, fontSize: 100, theme: 'dark', toc: [], searchQuery: '', searchResults: [], searchIndex: -1, pdfDoc: null, epubRendition: null, epubBook: null },
+};
+const listeners = new Set();
+const emit = () => listeners.forEach(fn => fn());
+const subscribe = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+const setState = (patch) => { Object.assign(state, patch); emit(); };
+
+// ==========================================
+// INDEXEDDB (idb loaded dynamically)
 // ==========================================
 let dbPromise = null;
 async function getDB() {
   if (dbPromise) return dbPromise;
-  dbPromise = openDB(DB_NAME, 1, {
+  // Load idb dynamically
+  const { openDB } = await import('https://cdn.jsdelivr.net/npm/idb@7/+esm');
+  dbPromise = openDB('SnapLearnDB', 1, {
     upgrade(db) {
-      if (!db.objectStoreNames.contains(STORE_BOOKS)) {
-        const store = db.createObjectStore(STORE_BOOKS, { keyPath: 'id' });
-        store.createIndex('title', 'title');
-        store.createIndex('type', 'type');
-        store.createIndex('addedAt', 'addedAt');
+      if (!db.objectStoreNames.contains('books')) {
+        const store = db.createObjectStore('books', { keyPath: 'id' });
+        store.createIndex('title', 'title'); store.createIndex('addedAt', 'addedAt');
       }
-      if (!db.objectStoreNames.contains(STORE_PROGRESS)) {
-        db.createObjectStore(STORE_PROGRESS, { keyPath: 'bookId' });
-      }
+      if (!db.objectStoreNames.contains('progress')) db.createObjectStore('progress', { keyPath: 'bookId' });
     },
   });
   return dbPromise;
 }
-
-async function saveBook(file, metadata, contentBlob) {
+async function saveBook(file, meta) {
   const db = await getDB();
   const id = crypto.randomUUID();
-  const book = {
-    id,
-    title: metadata.title || file.name.replace(/\.[^/.]+$/, ""),
-    author: metadata.author || "Unknown",
-    type: metadata.type || file.type || 'application/octet-stream',
-    cover: metadata.cover || null, // Base64 Data URL
-    fileSize: file.size,
-    addedAt: Date.now(),
-    updatedAt: Date.now(),
-    // Store file as Blob directly in IDB (efficient for large files)
-    fileBlob: contentBlob, 
-    // Extracted text for search (first 500k chars to save space)
-    searchText: metadata.searchText?.substring(0, 500000) || '',
-    pageCount: metadata.pageCount || 0,
-  };
-  await db.put(STORE_BOOKS, book);
+  const book = { id, title: meta.title || file.name.replace(/\.[^/.]+$/, ""), author: meta.author || "Unknown", type: meta.type || file.type, cover: meta.cover, fileSize: file.size, addedAt: Date.now(), updatedAt: Date.now(), fileBlob: file, searchText: (meta.searchText || '').substring(0, 500000), pageCount: meta.pageCount || 0 };
+  await db.put('books', book);
   return book;
 }
-
-async function getBooks() {
-  const db = await getDB();
-  return db.getAllFromIndex(STORE_BOOKS, 'addedAt'); // Newest first
-}
-
-async function getBook(id) {
-  const db = await getDB();
-  return db.get(STORE_BOOKS, id);
-}
-
-async function deleteBook(id) {
-  const db = await getDB();
-  await db.delete(STORE_BOOKS, id);
-  await db.delete(STORE_PROGRESS, id);
-}
-
-async function saveProgress(bookId, location, percentage) {
-  const db = await getDB();
-  await db.put(STORE_PROGRESS, { bookId, location, percentage, timestamp: Date.now() });
-}
-
-async function getProgress(bookId) {
-  const db = await getDB();
-  return db.get(STORE_PROGRESS, bookId);
-}
+async function getBooks() { const db = await getDB(); return db.getAllFromIndex('books', 'addedAt'); }
+async function getBook(id) { const db = await getDB(); return db.get('books', id); }
+async function deleteBook(id) { const db = await getDB(); await db.delete('books', id); await db.delete('progress', id); }
+async function saveProgress(bookId, loc, perc) { const db = await getDB(); await db.put('progress', { bookId, location: loc, percentage: perc, timestamp: Date.now() }); }
+async function getProgress(bookId) { const db = await getDB(); return db.get('progress', bookId); }
 
 // ==========================================
-// STATE MANAGEMENT (Reactive Proxy)
-// ==========================================
-const state = {
-  view: 'dashboard', // dashboard, library, reader, settings
-  sidebarOpen: true,
-  sidebarCollapsed: false,
-  theme: 'dark', // dark, light, sepia
-  books: [],
-  selectedBook: null,
-  reader: { 
-    instance: null, // pdfjs doc or epub rendition
-    type: null, 
-    currentLocation: null, 
-    totalPages: 0,
-    fontSize: 100,
-    theme: 'dark',
-    toc: [],
-    searchQuery: '',
-    searchResults: [],
-    searchIndex: -1,
-  },
-  uploadProgress: 0,
-  isUploading: false,
-  stats: { totalBooks: 0, totalHours: 0, streak: 0, xp: 0 },
-};
-
-// Simple Reactivity System
-const listeners = new Set();
-function emit() { listeners.forEach(fn => fn()); }
-function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
-function setState(patch) { Object.assign(state, patch); emit(); }
-
-// ==========================================
-// PARSING ENGINE (Web Workers via pdfjs/epubjs)
+// PARSING ENGINE (Dynamic Imports)
 // ==========================================
 async function parseTextbook(file) {
   setState({ isUploading: true, uploadProgress: 10 });
-  
-  const type = file.type;
-  let metadata = { title: file.name, searchText: '', pageCount: 0, cover: null };
-
+  let meta = { title: file.name, searchText: '', pageCount: 0, cover: null };
   try {
-    if (type === 'application/pdf') {
-      metadata = await parsePDF(file);
-    } else if (type === 'application/epub+zip' || file.name.endsWith('.epub')) {
-      metadata = await parseEPUB(file);
-    } else if (type === 'text/markdown' || type === 'text/plain' || file.name.endsWith('.md') || file.name.endsWith('.txt')) {
-      metadata = await parseText(file);
-    } else {
-      throw new Error(`Unsupported file type: ${type}`);
-    }
-  } catch (e) {
-    console.error("Parse Error:", e);
-    alert(`Failed to parse ${file.name}: ${e.message}`);
-    setState({ isUploading: false });
-    return null;
-  }
-
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) meta = await parsePDF(file);
+    else if (file.type === 'application/epub+zip' || file.name.endsWith('.epub')) meta = await parseEPUB(file);
+    else if (file.type.startsWith('text/') || file.name.endsWith('.md') || file.name.endsWith('.txt')) meta = await parseText(file);
+    else throw new Error(`Unsupported: ${file.type}`);
+  } catch (e) { alert(`Failed to parse ${file.name}: ${e.message}`); setState({ isUploading: false }); return null; }
   setState({ uploadProgress: 90 });
-  const book = await saveBook(file, metadata, file); // Store original file blob
+  const book = await saveBook(file, meta);
   setState({ isUploading: false, uploadProgress: 0 });
   return book;
 }
 
 async function parsePDF(file) {
+  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/+esm');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-  const numPages = pdf.numPages;
-  
-  // Extract text from first few pages for cover/preview + all for search
-  for (let i = 1; i <= Math.min(numPages, 5); i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    fullText += content.items.map(s => s.str).join(' ') + '\n\n';
-  }
-  // Generate Cover Thumbnail (Page 1)
-  const page1 = await pdf.getPage(1);
-  const viewport = page1.getViewport({ scale: 0.4 });
-  const canvas = document.createElement('canvas');
-  canvas.width = viewport.width; canvas.height = viewport.height;
+  let fullText = ''; const numPages = pdf.numPages;
+  for (let i = 1; i <= Math.min(numPages, 5); i++) { const page = await pdf.getPage(i); const content = await page.getTextContent(); fullText += content.items.map(s => s.str).join(' ') + '\n\n'; }
+  const page1 = await pdf.getPage(1); const viewport = page1.getViewport({ scale: 0.4 });
+  const canvas = document.createElement('canvas'); canvas.width = viewport.width; canvas.height = viewport.height;
   await page1.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
   const cover = canvas.toDataURL('image/webp', 0.8);
-
-  // Extract ALL text for search (background)
-  // Note: In production, do this in a Web Worker to not block UI. 
-  // For this standalone demo, we do a quick sample.
-  let searchText = fullText;
-  if (numPages > 5) {
-     // Just grab a sample from middle/end for demo speed
-     const mid = await pdf.getPage(Math.floor(numPages/2)).then(p => p.getTextContent());
-     const end = await pdf.getPage(numPages).then(p => p.getTextContent());
-     searchText += mid.items.map(s=>s.str).join(' ') + end.items.map(s=>s.str).join(' ');
-  }
-
-  return { title: pdf.metadata?.info?.Title || file.name, pageCount: numPages, cover, searchText, type: 'pdf' };
+  return { title: file.name, pageCount: numPages, cover, searchText: fullText, type: 'pdf' };
 }
 
 async function parseEPUB(file) {
-  // EpubJS needs a URL. Create Object URL.
+  const EpubModule = await import('https://cdn.jsdelivr.net/npm/epubjs@0.3.93/+esm');
+  const Epub = EpubModule.default || EpubModule; // Handle both default and named
   const url = URL.createObjectURL(file);
   const book = Epub(url);
   await book.ready;
-  
   const metadata = book.package.metadata;
   const toc = await book.navigation.getToc();
-  const pageCount = toc.length; // Approximation
-  
-  // Get Cover
   let cover = null;
   const coverUrl = book.coverUrl();
-  if (coverUrl) {
-    try { 
-      const resp = await fetch(coverUrl); 
-      const blob = await resp.blob(); 
-      cover = URL.createObjectURL(blob); // Use blob URL for cover
-    } catch(e) { /* ignore */ }
-  }
-
-  // Extract Text for Search (Rendition is heavy, parse spine items)
-  // Simplified: Grab text from first few spine items
-  let searchText = '';
-  const spine = book.spine.spineItems.slice(0, 5);
-  for (const item of spine) {
-    try {
-      const content = await book.load.bind(book)(item.href); // Internal load
-      // Actually easier: use book.rendition but that's heavy. 
-      // For demo, we skip full text extraction for EPUB to keep it fast.
-      // Real app: Use a worker to parse spine XML.
-    } catch(e) {}
-  }
-
-  URL.revokeObjectURL(url); // Cleanup
-  return { title: metadata.title || file.name, author: metadata.creator, pageCount, cover, searchText, type: 'epub' };
+  if (coverUrl) { try { const resp = await fetch(coverUrl); const blob = await resp.blob(); cover = URL.createObjectURL(blob); } catch(e) {} }
+  URL.revokeObjectURL(url);
+  return { title: metadata.title || file.name, author: metadata.creator, pageCount: toc.length, cover, searchText: '', type: 'epub', toc }; // Pass TOC
 }
 
 async function parseText(file) {
   const text = await file.text();
+  const { marked } = await import('https://cdn.jsdelivr.net/npm/marked@12/+esm');
+  const DOMPurify = (await import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')).default;
   const html = DOMPurify.sanitize(marked.parse(text));
-  // Create a temporary div to extract text content for search
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  const searchText = div.innerText;
-  return { title: file.name, searchText, type: 'markdown', pageCount: 1, cover: null };
+  const div = document.createElement('div'); div.innerHTML = html;
+  return { title: file.name, searchText: div.innerText, type: 'markdown', pageCount: 1, cover: null };
 }
 
 // ==========================================
-// RENDERER (Vanilla DOM + Animation Helpers)
+// RENDER ENGINE
 // ==========================================
 const app = document.getElementById('app');
-let rafId = null;
-
 function render() {
-  // Theme Application
   document.documentElement.classList.toggle('light', state.theme === 'light');
   document.documentElement.classList.toggle('sepia', state.theme === 'sepia' && state.view === 'reader');
   
-  // Main Layout
+  // Hide loading shell on first successful render
+  const loading = document.getElementById('loading-shell');
+  if (loading) loading.style.display = 'none';
+
   app.innerHTML = `
-    <aside id="sidebar" class="${sidebarClasses()}" role="navigation" aria-label="Main Navigation">
-      ${renderSidebar()}
-    </aside>
+    <aside id="sidebar" class="${sidebarClasses()}" role="navigation">${renderSidebar()}</aside>
     <main id="main" class="${mainClasses()}" role="main">
       ${renderTopBar()}
-      <div class="p-4 md:p-6 lg:p-8 overflow-y-auto h-[calc(100%-4rem)] glass-scroll">
-        ${renderView()}
-      </div>
+      <div class="p-4 md:p-6 lg:p-8 overflow-y-auto h-[calc(100%-4rem)] glass-scroll">${renderView()}</div>
     </main>
     ${state.view === 'reader' ? renderReaderOverlay() : ''}
   `;
-  
-  // Hydrate Lucide Icons
-  lucide.createIcons({ attrs: { 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' } });
-  
-  // Bind Events
   bindEvents();
-  
-  // Animate Entrance
-  requestAnimationFrame(() => {
-    document.querySelectorAll('.animate-fade-up').forEach((el, i) => {
-      el.style.animationDelay = `${i * 50}ms`;
-    });
-  });
+  // Trigger fade-in animations
+  requestAnimationFrame(() => document.querySelectorAll('.animate-fade-up').forEach((el, i) => el.style.animationDelay = `${i * 50}ms`));
 }
-
-function sidebarClasses() {
-  let cls = 'fixed left-0 top-0 z-40 h-full flex flex-col transition-all duration-300 ease-out border-r border-glass-border glass-pane-elevated';
-  cls += state.sidebarCollapsed ? ' w-16' : ' w-72';
-  if (!state.sidebarOpen) cls += ' -translate-x-full lg:translate-x-0';
-  return cls;
-}
-function mainClasses() {
-  let cls = 'flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-out';
-  cls += state.sidebarCollapsed ? ' lg:ml-16' : ' lg:ml-72';
-  return cls;
-}
+function sidebarClasses() { let c = 'fixed left-0 top-0 z-40 h-full flex flex-col transition-all duration-300 ease-out border-r border-glass-border glass-strong'; c += state.sidebarCollapsed ? ' w-16' : ' w-72'; if (!state.sidebarOpen) c += ' -translate-x-full lg:translate-x-0'; return c; }
+function mainClasses() { let c = 'flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-out'; c += state.sidebarCollapsed ? ' lg:ml-16' : ' lg:ml-72'; return c; }
 
 // ==========================================
-// VIEW RENDERERS
+// VIEW RENDERERS (Using Icon() helper)
 // ==========================================
 function renderSidebar() {
   return `
     <div class="flex items-center justify-between h-16 px-4 border-b border-glass-border flex-shrink-0">
       <div class="flex items-center gap-2 text-white font-bold text-lg overflow-hidden whitespace-nowrap ${state.sidebarCollapsed ? 'opacity-0 w-0 pointer-events-none' : ''}">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-        </div>
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center flex-shrink-0">${Icon('book', 'w-5 h-5 text-white')}</div>
         SnapLearn
       </div>
-      <button id="btn-toggle-sidebar" class="text-muted-foreground hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors" aria-label="${state.sidebarCollapsed ? 'Expand' : 'Collapse'} Sidebar">
-        <i data-lucide="${state.sidebarCollapsed ? 'chevron-right' : 'chevron-left'}" class="w-5 h-5"></i>
-      </button>
+      <button id="btn-toggle-sidebar" class="text-muted-foreground hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors" aria-label="${state.sidebarCollapsed ? 'Expand' : 'Collapse'} Sidebar">${Icon(state.sidebarCollapsed ? 'chevronRight' : 'chevronLeft')}</button>
     </div>
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto glass-scroll ${state.sidebarCollapsed ? 'items-center' : ''}" style="flex-direction: column;">
-      ${NavItem('/dashboard', 'LayoutDashboard', 'Dashboard', state.view === 'dashboard')}
-      ${NavItem('/library', 'Library', 'My Library', state.view === 'library')}
-      ${NavItem('/progress', 'TrendingUp', 'Progress', state.view === 'progress')}
-      ${NavItem('/settings', 'Settings', 'Settings', state.view === 'settings')}
+      ${NavItem('/dashboard', 'layoutDashboard', 'Dashboard', state.view === 'dashboard')}
+      ${NavItem('/library', 'library', 'My Library', state.view === 'library')}
+      ${NavItem('/progress', 'trendingUp', 'Progress', state.view === 'progress')}
+      ${NavItem('/settings', 'settings', 'Settings', state.view === 'settings')}
     </nav>
     <div class="p-3 border-t border-glass-border flex-shrink-0 ${state.sidebarCollapsed ? 'flex justify-center' : ''}">
       <button id="btn-theme" class="w-full flex items-center ${state.sidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-white hover:bg-white/5 transition-colors" aria-label="Toggle Theme">
-        <i data-lucide="${themeIcon()}" class="w-5 h-5 flex-shrink-0"></i>
+        ${Icon(themeIcon())}
         <span class="whitespace-nowrap overflow-hidden ${state.sidebarCollapsed ? 'opacity-0 w-0' : ''}">${themeLabel()}</span>
       </button>
     </div>
   `;
 }
-
-function NavItem(href, icon, label, active) {
-  const activeClass = active ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]' : 'text-muted-foreground hover:text-white hover:bg-white/5';
+function NavItem(route, icon, label, active) {
+  const activeCls = active ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]' : 'text-muted-foreground hover:text-white hover:bg-white/5';
   const iconOnly = state.sidebarCollapsed ? 'justify-center w-10' : 'w-8';
-  return `
-    <button data-route="${href}" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${activeClass} ${iconOnly}">
-      <i data-lucide="${icon}" class="w-5 h-5 flex-shrink-0 text-center"></i>
-      <span class="whitespace-nowrap overflow-hidden ${state.sidebarCollapsed ? 'opacity-0 w-0 absolute pointer-events-none' : ''}">${label}</span>
-    </button>
-  `;
+  return `<button data-route="${route}" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${activeCls} ${iconOnly}">${Icon(icon, 'w-5 h-5 flex-shrink-0 text-center')}<span class="whitespace-nowrap overflow-hidden ${state.sidebarCollapsed ? 'opacity-0 w-0 absolute pointer-events-none' : ''}">${label}</span></button>`;
 }
-
 function themeIcon() { return state.theme === 'dark' ? 'sun' : state.theme === 'light' ? 'monitor' : 'coffee'; }
 function themeLabel() { return state.theme === 'dark' ? 'Dark Mode' : state.theme === 'light' ? 'Light Mode' : 'Sepia Mode'; }
 
 function renderTopBar() {
   return `
-    <header class="fixed left-0 right-0 top-0 z-30 h-16 px-4 md:px-6 glass-pane-floating border-b border-glass-border flex items-center justify-between gap-4" style="margin-left: ${state.sidebarCollapsed ? '64px' : '288px'};">
-      <button id="btn-mobile-menu" class="md:hidden p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white"><i data-lucide="menu" class="w-6 h-6"></i></button>
-      
+    <header class="fixed left-0 right-0 top-0 z-30 h-16 px-4 md:px-6 glass-float border-b border-glass-border flex items-center justify-between gap-4" style="margin-left: ${state.sidebarCollapsed ? '64px' : '288px'};">
+      <button id="btn-mobile-menu" class="md:hidden p-2 rounded-xl hover:bg-white/5 text-muted-foreground hover:text-white">${Icon('menu', 'w-6 h-6')}</button>
       <div class="flex-1 max-w-xl hidden md:flex">
-        <div class="glass-pane relative w-full">
-          <div class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"><i data-lucide="search" class="w-5 h-5"></i></div>
-          <input id="global-search" type="search" placeholder="Search library..." class="w-full bg-transparent py-2.5 pl-12 pr-4 text-white placeholder:text-muted-foreground focus:outline-none text-sm" aria-label="Global Search">
-        </div>
+        <div class="glass relative w-full"><div class="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">${Icon('search', 'w-5 h-5')}</div><input id="global-search" type="search" placeholder="Search library..." class="w-full bg-transparent py-2.5 pl-12 pr-4 text-white placeholder:text-muted-foreground focus:outline-none text-sm" aria-label="Global Search"></div>
       </div>
-
       <div class="flex items-center gap-2">
-        <button id="btn-upload" class="glass-pane specular interactive px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-white/5 transition-colors" aria-label="Upload Textbook">
-          <i data-lucide="upload" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Add Book</span>
-          <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.epub,.md,.txt,.markdown">
-        </button>
-        <div class="glass-pane w-9 h-9 rounded-full overflow-hidden flex items-center justify-center p-0 specular interactive" style="background: linear-gradient(135deg, var(--accent), var(--accent-2));" title="Profile">
-          <span class="text-white font-bold text-sm">U</span>
-        </div>
+        <button id="btn-upload" class="glass specular interactive px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-white/5 transition-colors" aria-label="Upload Textbook">${Icon('upload', 'w-4 h-4')}<span class="hidden sm:inline">Add Book</span><input type="file" id="file-input" class="hidden" multiple accept=".pdf,.epub,.md,.txt,.markdown"></button>
+        <div class="glass w-9 h-9 rounded-full overflow-hidden flex items-center justify-center p-0 specular interactive" style="background: linear-gradient(135deg, var(--accent), var(--accent-2));" title="Profile"><span class="text-white font-bold text-sm">U</span></div>
       </div>
     </header>
   `;
@@ -554,50 +361,33 @@ function renderView() {
 function renderDashboard() {
   return `
     <div class="space-y-6 animate-fade-up">
-      <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Welcome back.</h1>
-          <p class="text-muted-foreground mt-1">Continue your learning journey.</p>
-        </div>
-        <div class="flex items-center gap-3">
-           <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-             <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Online
-           </span>
-        </div>
+        <div><h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Welcome back.</h1><p class="text-muted-foreground mt-1">Continue your learning journey.</p></div>
+        <div class="flex items-center gap-3"><span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Online</span></div>
       </div>
-
-      <!-- Stats Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="stats-grid">
         ${StatCard('Hours Studied', state.stats.totalHours + 'h', 'clock', 'from-blue-500 to-cyan-500', 0)}
         ${StatCard('Current Streak', state.stats.streak + ' days', 'flame', 'from-orange-500 to-red-500', 1)}
         ${StatCard('Books Finished', state.stats.totalBooks, 'trophy', 'from-emerald-500 to-teal-500', 2)}
         ${StatCard('Total XP', state.stats.xp.toLocaleString(), 'star', 'from-indigo-500 to-purple-500', 3)}
       </div>
-
-      <!-- Continue Reading & Quick Actions -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-4">
-          <h2 class="text-xl font-semibold flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5"></i> Continue Reading</h2>
+          <h2 class="text-xl font-semibold flex items-center gap-2">${Icon('bookOpen', 'w-5 h-5')} Continue Reading</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="continue-grid">
             ${state.books.slice(0, 4).length ? state.books.slice(0, 4).map(b => BookCard(b, true)).join('') : EmptyState('No books yet', 'Upload your first textbook to get started', 'upload')}
           </div>
         </div>
         <div class="space-y-4">
-          <h2 class="text-xl font-semibold flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> Quick Actions</h2>
+          <h2 class="text-xl font-semibold flex items-center gap-2">${Icon('zap', 'w-5 h-5')} Quick Actions</h2>
           <div class="space-y-3">
             ${ActionBtn('upload', 'Upload Textbook', 'Drag & drop PDF, EPUB, MD', 'upload', 'from-indigo-500 to-purple-500')}
             ${ActionBtn('import', 'Import from URL', 'Fetch public domain books', 'globe', 'from-cyan-500 to-blue-500')}
             ${ActionBtn('export', 'Export Library', 'Backup your data (JSON)', 'download', 'from-amber-500 to-orange-500')}
           </div>
-          
-          <div class="glass-pane p-4 mt-6 border-t border-glass-border">
-            <h3 class="font-medium mb-3 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Storage Status</h3>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between"><span class="text-muted-foreground">IndexedDB Usage</span><span id="storage-used" class="font-mono">Calculating...</span></div>
-              <div class="h-2 bg-white/5 rounded-full overflow-hidden"><div id="storage-bar" class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-500" style="width: 0%"></div></div>
-              <p class="text-xs text-muted-foreground">Quota is dynamic (typically 50-80% of free disk space).</p>
-            </div>
+          <div class="glass p-4 mt-6 border-t border-glass-border">
+            <h3 class="font-medium mb-3 flex items-center gap-2">${Icon('database', 'w-5 h-5')} Storage Status</h3>
+            <div class="space-y-2 text-sm"><div class="flex justify-between"><span class="text-muted-foreground">IndexedDB Usage</span><span id="storage-used" class="font-mono">Calculating...</span></div><div class="h-2 bg-white/5 rounded-full overflow-hidden"><div id="storage-bar" class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-500" style="width: 0%"></div></div><p class="text-xs text-muted-foreground">Quota is dynamic (typically 50-80% of free disk space).</p></div>
           </div>
         </div>
       </div>
@@ -609,17 +399,10 @@ function renderLibrary() {
   return `
     <div class="animate-fade-up">
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 class="text-3xl md:text-4xl font-bold tracking-tight">My Library</h1>
-          <p class="text-muted-foreground mt-1">${state.books.length} textbooks • ${state.books.reduce((a,b)=>a+b.fileSize,0)} bytes</p>
-        </div>
-        <div class="flex items-center gap-3">
-           <button id="btn-grid-view" class="glass-pane specular interactive p-2" aria-label="Grid View"><i data-lucide="grid" class="w-5 h-5"></i></button>
-           <button id="btn-list-view" class="glass-pane p-2" aria-label="List View"><i data-lucide="list" class="w-5 h-5"></i></button>
-        </div>
+        <div><h1 class="text-3xl md:text-4xl font-bold tracking-tight">My Library</h1><p class="text-muted-foreground mt-1">${state.books.length} textbooks</p></div>
+        <div class="flex items-center gap-3"><button id="btn-grid-view" class="glass specular interactive p-2" aria-label="Grid View">${Icon('grid', 'w-5 h-5')}</button><button id="btn-list-view" class="glass p-2" aria-label="List View">${Icon('list', 'w-5 h-5')}</button></div>
       </div>
-      
-      <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 glass-scroll h-[calc(100vh-16rem)]">
+      <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 glass-scroll" style="height: calc(100vh - 16rem);">
         ${state.books.length ? state.books.map(b => BookCard(b, false)).join('') : EmptyState('Library Empty', 'Upload textbooks to build your knowledge base', 'library')}
       </div>
     </div>
@@ -631,23 +414,13 @@ function renderProgress() {
     <div class="animate-fade-up max-w-3xl">
       <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-8">Learning Progress</h1>
       <div class="space-y-4">
-        ${state.books.length ? state.books.map(b => {
-          const prog = state.reader.currentLocation; // Simplified
-          return `
-            <div class="glass-pane p-4 specular interactive flex items-center gap-4 group" data-book-id="${b.id}">
-              ${b.cover ? `<img src="${b.cover}" class="w-16 h-24 rounded-lg object-cover flex-shrink-0 glass-pane" alt="">` : `<div class="w-16 h-24 rounded-lg flex items-center justify-center flex-shrink-0 glass-pane bg-gradient-to-br from-indigo-500 to-purple-500"><i data-lucide="book" class="w-8 h-8 text-white/50"></i></div>`}
-              <div class="flex-1 min-w-0">
-                <h3 class="font-medium truncate">${b.title}</h3>
-                <p class="text-sm text-muted-foreground truncate">${b.author}</p>
-                <div class="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-500" style="width: ${Math.random()*100}%"></div>
-                </div>
-                <p class="text-xs text-muted-foreground mt-1">Last read: ${new Date(b.updatedAt).toLocaleDateString()}</p>
-              </div>
-              <button class="glass-pane p-2 specular interactive opacity-0 group-hover:opacity-100 transition-opacity" data-action="resume" data-book-id="${b.id}" aria-label="Resume"><i data-lucide="play" class="w-5 h-5"></i></button>
-            </div>
-          `;
-        }).join('') : EmptyState('No Progress', 'Start reading to track progress', 'trending-up') }
+        ${state.books.length ? state.books.map(b => `
+          <div class="glass p-4 specular interactive flex items-center gap-4 group" data-book-id="${b.id}">
+            ${b.cover ? `<img src="${b.cover}" class="w-16 h-24 rounded-lg object-cover flex-shrink-0 glass" alt="">` : `<div class="w-16 h-24 rounded-lg flex items-center justify-center flex-shrink-0 glass bg-gradient-to-br from-indigo-500 to-purple-500">${Icon('book', 'w-8 h-8 text-white/50')}</div>`}
+            <div class="flex-1 min-w-0"><h3 class="font-medium truncate">${b.title}</h3><p class="text-sm text-muted-foreground truncate">${b.author}</p><div class="mt-2 h-1.5 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-500" style="width: ${Math.random()*100}%"></div></div><p class="text-xs text-muted-foreground mt-1">Last read: ${new Date(b.updatedAt).toLocaleDateString()}</p></div>
+            <button class="glass p-2 specular interactive opacity-0 group-hover:opacity-100 transition-opacity" data-action="resume" data-book-id="${b.id}" aria-label="Resume">${Icon('play', 'w-5 h-5')}</button>
+          </div>
+        `).join('') : EmptyState('No Progress', 'Start reading to track progress', 'trendingUp') }
       </div>
     </div>
   `;
@@ -657,160 +430,61 @@ function renderSettings() {
   return `
     <div class="animate-fade-up max-w-2xl space-y-6">
       <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Settings</h1>
-      
-      <div class="glass-pane p-6 space-y-6">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5"></i> Appearance</h2>
+      <div class="glass p-6 space-y-6">
+        <h2 class="text-lg font-semibold flex items-center gap-2">${Icon('palette', 'w-5 h-5')} Appearance</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          ${['dark', 'light', 'sepia'].map(t => `
-            <button class="theme-option glass-pane p-4 specular interactive ${state.theme === t ? 'border-2 border-indigo-500 bg-indigo-500/10' : ''}" data-theme="${t}">
-              <div class="w-full h-16 rounded-lg mb-3 ${themePreview(t)}"></div>
-              <span class="font-medium capitalize">${t}</span>
-            </button>
-          `).join('')}
+          ${['dark', 'light', 'sepia'].map(t => `<button class="theme-option glass p-4 specular interactive ${state.theme === t ? 'border-2 border-indigo-500 bg-indigo-500/10' : ''}" data-theme="${t}"><div class="w-full h-16 rounded-lg mb-3 ${themePreview(t)}"></div><span class="font-medium capitalize">${t}</span></button>`).join('')}
         </div>
       </div>
-
-      <div class="glass-pane p-6 space-y-6">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Data Management</h2>
+      <div class="glass p-6 space-y-6">
+        <h2 class="text-lg font-semibold flex items-center gap-2">${Icon('database', 'w-5 h-5')} Data Management</h2>
         <div class="space-y-3">
-          <button id="btn-export" class="glass-pane specular interactive w-full p-4 flex items-center justify-between" style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.1)); border-color: rgba(99,102,241,0.2);">
-            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center"><i data-lucide="download" class="w-5 h-5 text-indigo-400"></i></div><div><p class="font-medium">Export Library</p><p class="text-sm text-muted-foreground">Download all metadata & progress (JSON)</p></div></div>
-            <i data-lucide="chevron-right" class="w-5 h-5 text-muted-foreground"></i>
-          </button>
-          <label class="glass-pane specular interactive w-full p-4 flex items-center justify-between cursor-pointer" style="background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(99,102,241,0.1)); border-color: rgba(236,72,153,0.2);">
-            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center"><i data-lucide="upload" class="w-5 h-5 text-pink-400"></i></div><div><p class="font-medium">Import Library</p><p class="text-sm text-muted-foreground">Restore from backup file</p></div></div>
-            <input type="file" id="import-file" accept=".json" class="hidden" onchange="handleImport(event)">
-          </label>
-          <button id="btn-clear" class="glass-pane specular interactive w-full p-4 flex items-center justify-between text-red-400 hover:bg-red-500/10 border-red-500/20">
-            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center"><i data-lucide="trash-2" class="w-5 h-5 text-red-400"></i></div><div><p class="font-medium">Clear All Data</p><p class="text-sm text-muted-foreground">Irreversibly delete all books & progress</p></div></div>
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-          </button>
+          <button id="btn-export" class="glass specular interactive w-full p-4 flex items-center justify-between" style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.1)); border-color: rgba(99,102,241,0.2);"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">${Icon('download', 'w-5 h-5 text-indigo-400')}</div><div><p class="font-medium">Export Library</p><p class="text-sm text-muted-foreground">Download all metadata & progress (JSON)</p></div></div>${Icon('chevronRight', 'w-5 h-5 text-muted-foreground')}</button>
+          <label class="glass specular interactive w-full p-4 flex items-center justify-between cursor-pointer" style="background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(99,102,241,0.1)); border-color: rgba(236,72,153,0.2);"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">${Icon('upload', 'w-5 h-5 text-pink-400')}</div><div><p class="font-medium">Import Library</p><p class="text-sm text-muted-foreground">Restore from backup file</p></div></div><input type="file" id="import-file" accept=".json" class="hidden" onchange="window.handleImport(event)"></label>
+          <button id="btn-clear" class="glass specular interactive w-full p-4 flex items-center justify-between text-red-400 hover:bg-red-500/10 border-red-500/20"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">${Icon('trash2', 'w-5 h-5 text-red-400')}</div><div><p class="font-medium">Clear All Data</p><p class="text-sm text-muted-foreground">Irreversibly delete all books & progress</p></div></div>${Icon('alertTriangle', 'w-5 h-5')}</button>
         </div>
       </div>
-
-      <div class="glass-pane p-6">
-        <h2 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="info" class="w-5 h-5"></i> About</h2>
-        <p class="text-muted-foreground mt-2 text-sm">SnapLearn Liquid Glass v1.0. Runs entirely client-side on GitHub Pages. Built with IndexedDB, pdf.js, epubjs, marked.js.</p>
-      </div>
+      <div class="glass p-6"><h2 class="text-lg font-semibold flex items-center gap-2">${Icon('info', 'w-5 h-5')} About</h2><p class="text-muted-foreground mt-2 text-sm">SnapLearn Liquid Glass v1.0. Runs entirely client-side on GitHub Pages. Built with IndexedDB, pdf.js, epubjs, marked.js.</p></div>
     </div>
   `;
 }
-
-function themePreview(t) {
-  if (t === 'dark') return 'bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700';
-  if (t === 'light') return 'bg-gradient-to-br from-slate-100 to-white border border-slate-200';
-  return 'bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200';
-}
-
-function EmptyState(title, desc, icon) {
-  return `<div class="col-span-full glass-pane p-12 text-center specular"><div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4"><i data-lucide="${icon}" class="w-8 h-8 text-indigo-400"></i></div><h3 class="text-lg font-medium">${title}</h3><p class="text-muted-foreground mt-1">${desc}</p></div>`;
-}
-
-function StatCard(label, value, icon, gradient, delay) {
-  return `<div class="glass-pane p-6 specular interactive animate-fade-up delay-${delay} relative overflow-hidden" style="background: linear-gradient(135deg, var(--glass-bg), var(--glass-bg-strong));">
-    <div class="absolute inset-0 bg-gradient-to-br ${gradient} opacity-10"></div>
-    <div class="relative z-10 flex items-start justify-between">
-      <div>
-        <p class="text-sm font-medium text-muted-foreground">${label}</p>
-        <p class="text-3xl font-bold mt-1 bg-gradient-to-r ${gradient} bg-clip-text text-transparent">${value}</p>
-      </div>
-      <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center"><i data-lucide="${icon}" class="w-6 h-6 text-white"></i></div>
-    </div>
-  </div>`;
-}
-
-function BookCard(book, showProgress) {
-  const prog = Math.random() * 100; // Mock progress
-  return `
-    <article class="glass-pane flex flex-col h-full specular interactive group relative overflow-hidden" data-book-id="${book.id}">
-      <div class="relative aspect-[3/4] overflow-hidden bg-black/50">
-        ${book.cover ? `<img src="${book.cover}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="${book.title} cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/30 to-purple-500/30"><i data-lucide="book" class="w-12 h-12 text-white/30"></i></div>`}
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        <div class="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 justify-center">
-          <button class="glass-pane p-2 specular interactive" data-action="read" data-book-id="${book.id}" aria-label="Read"><i data-lucide="book-open" class="w-5 h-5"></i></button>
-          <button class="glass-pane p-2 specular interactive" data-action="delete" data-book-id="${book.id}" aria-label="Delete"><i data-lucide="trash-2" class="w-5 h-5 text-red-400"></i></button>
-        </div>
-      </div>
-      <div class="p-4 flex-1 flex flex-col">
-        <h3 class="font-semibold truncate group-hover:text-indigo-400 transition-colors">${book.title}</h3>
-        <p class="text-sm text-muted-foreground truncate mt-1">${book.author}</p>
-        <div class="mt-auto pt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <span>${formatBytes(book.fileSize)}</span>
-          <span>${book.type.toUpperCase()}</span>
-        </div>
-        ${showProgress ? `<div class="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" style="width: ${prog}%"></div></div>` : ''}
-      </div>
-    </article>
-  `;
-}
-
-function ActionBtn(id, title, desc, icon, gradient) {
-  return `<button class="action-btn glass-pane p-4 specular interactive flex items-center gap-4" data-action="${id}">
-    <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${gradient}"><i data-lucide="${icon}" class="w-6 h-6 text-white"></i></div>
-    <div><p class="font-medium">${title}</p><p class="text-sm text-muted-foreground">${desc}</p></div>
-    <i data-lucide="chevron-right" class="w-5 h-5 text-muted-foreground ml-auto"></i>
-  </button>`;
-}
+function themePreview(t) { if (t === 'dark') return 'bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700'; if (t === 'light') return 'bg-gradient-to-br from-slate-100 to-white border border-slate-200'; return 'bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200'; }
+function EmptyState(title, desc, icon) { return `<div class="col-span-full glass p-12 text-center specular">${Icon(icon, 'w-16 h-16 mx-auto mb-4 text-indigo-400')}<h3 class="text-lg font-medium">${title}</h3><p class="text-muted-foreground mt-1">${desc}</p></div>`; }
+function StatCard(label, value, icon, gradient, delay) { return `<div class="glass p-6 specular interactive animate-fade-up delay-${delay} relative overflow-hidden" style="background: linear-gradient(135deg, var(--glass-bg), var(--glass-bg-strong));"><div class="absolute inset-0 bg-gradient-to-br ${gradient} opacity-10"></div><div class="relative z-10 flex items-start justify-between"><div><p class="text-sm font-medium text-muted-foreground">${label}</p><p class="text-3xl font-bold mt-1 bg-gradient-to-r ${gradient} bg-clip-text text-transparent">${value}</p></div><div class="w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center">${Icon(icon, 'w-6 h-6 text-white')}</div></div></div>`; }
+function BookCard(book, showProgress) { const prog = Math.random() * 100; return `<article class="glass flex flex-col h-full specular interactive group relative overflow-hidden" data-book-id="${book.id}"><div class="relative aspect-[3/4] overflow-hidden bg-black/50">${book.cover ? `<img src="${book.cover}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="${book.title} cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/30 to-purple-500/30">${Icon('book', 'w-12 h-12 text-white/30')}</div>`}<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div><div class="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 justify-center"><button class="glass p-2 specular interactive" data-action="read" data-book-id="${book.id}" aria-label="Read">${Icon('bookOpen', 'w-5 h-5')}</button><button class="glass p-2 specular interactive" data-action="delete" data-book-id="${book.id}" aria-label="Delete">${Icon('trash2', 'w-5 h-5 text-red-400')}</button></div></div><div class="p-4 flex-1 flex flex-col"><h3 class="font-semibold truncate group-hover:text-indigo-400 transition-colors">${book.title}</h3><p class="text-sm text-muted-foreground truncate mt-1">${book.author}</p><div class="mt-auto pt-3 flex items-center justify-between text-xs text-muted-foreground"><span>${formatBytes(book.fileSize)}</span><span>${book.type.toUpperCase()}</span></div>${showProgress ? `<div class="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full" style="width: ${prog}%"></div></div>` : ''}</div></article>`; }
+function ActionBtn(id, title, desc, icon, gradient) { return `<button class="action-btn glass p-4 specular interactive flex items-center gap-4" data-action="${id}"><div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${gradient}">${Icon(icon, 'w-6 h-6 text-white')}</div><div><p class="font-medium">${title}</p><p class="text-sm text-muted-foreground">${desc}</p></div>${Icon('chevronRight', 'w-5 h-5 text-muted-foreground ml-auto')}</button>`; }
+function formatBytes(b) { if (b < 1024) return b + ' B'; else if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB'; else return (b/1024/1024).toFixed(1) + ' MB'; }
 
 // ==========================================
-// READER OVERLAY (Fullscreen Modal)
+// READER OVERLAY
 // ==========================================
 function renderReaderOverlay() {
   if (!state.selectedBook) return '';
   const r = state.reader;
   return `
     <div id="reader-overlay" class="fixed inset-0 z-50 flex flex-col" role="dialog" aria-modal="true" aria-label="Textbook Reader">
-      <!-- Header -->
-      <header class="glass-pane-floating border-b border-glass-border px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0">
-        <button id="btn-close-reader" class="glass-pane p-2 specular interactive lg:hidden" aria-label="Close Reader"><i data-lucide="x" class="w-5 h-5"></i></button>
-        <div class="flex-1 flex items-center gap-4 min-w-0">
-          <h2 class="font-semibold truncate">${state.selectedBook.title}</h2>
-          <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">${state.selectedBook.type.toUpperCase()}</span>
-        </div>
+      <header class="glass-float border-b border-glass-border px-4 py-3 flex items-center justify-between gap-4 flex-shrink-0">
+        <button id="btn-close-reader" class="glass p-2 specular interactive lg:hidden" aria-label="Close Reader">${Icon('x', 'w-5 h-5')}</button>
+        <div class="flex-1 flex items-center gap-4 min-w-0"><h2 class="font-semibold truncate">${state.selectedBook.title}</h2><span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">${state.selectedBook.type.toUpperCase()}</span></div>
         <div class="flex items-center gap-2">
-          <!-- Search in Book -->
-          <div class="relative hidden md:block">
-            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
-            <input id="reader-search" type="search" placeholder="Search in book..." class="glass-pane px-8 py-1.5 pl-10 pr-8 rounded-xl text-sm w-64 bg-white/5 focus:w-80 transition-width" value="${r.searchQuery}">
-          </div>
-          <!-- Theme/Font Controls -->
-          <div class="flex items-center gap-1 glass-pane p-1" role="group" aria-label="Reader Settings">
-            <button class="reader-btn p-2 rounded-lg ${r.theme === 'dark' ? 'bg-white/10' : ''}" data-theme="dark" aria-label="Dark"><i data-lucide="moon" class="w-4 h-4"></i></button>
-            <button class="reader-btn p-2 rounded-lg ${r.theme === 'light' ? 'bg-white/10' : ''}" data-theme="light" aria-label="Light"><i data-lucide="sun" class="w-4 h-4"></i></button>
-            <button class="reader-btn p-2 rounded-lg ${r.theme === 'sepia' ? 'bg-white/10' : ''}" data-theme="sepia" aria-label="Sepia"><i data-lucide="coffee" class="w-4 h-4"></i></button>
+          <div class="relative hidden md:block"><${Icon('search', 'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-400')}<input id="reader-search" type="search" placeholder="Search in book..." class="glass px-8 py-1.5 pl-10 pr-8 rounded-xl text-sm w-64 bg-white/5 focus:w-80 transition-width" value="${r.searchQuery}"></div>
+          <div class="flex items-center gap-1 glass p-1" role="group" aria-label="Reader Settings">
+            <button class="reader-btn p-2 rounded-lg ${r.theme === 'dark' ? 'bg-white/10' : ''}" data-theme="dark" aria-label="Dark">${Icon('moon', 'w-4 h-4')}</button>
+            <button class="reader-btn p-2 rounded-lg ${r.theme === 'light' ? 'bg-white/10' : ''}" data-theme="light" aria-label="Light">${Icon('sun', 'w-4 h-4')}</button>
+            <button class="reader-btn p-2 rounded-lg ${r.theme === 'sepia' ? 'bg-white/10' : ''}" data-theme="sepia" aria-label="Sepia">${Icon('coffee', 'w-4 h-4')}</button>
             <div class="w-px h-6 bg-white/10 mx-1"></div>
-            <button class="reader-btn p-2 rounded-lg" data-font="down" aria-label="Smaller Font"><i data-lucide="minus" class="w-4 h-4"></i></button>
+            <button class="reader-btn p-2 rounded-lg" data-font="down" aria-label="Smaller Font">${Icon('minus', 'w-4 h-4')}</button>
             <span class="px-2 text-xs font-mono text-muted-foreground">${r.fontSize}%</span>
-            <button class="reader-btn p-2 rounded-lg" data-font="up" aria-label="Larger Font"><i data-lucide="plus" class="w-4 h-4"></i></button>
+            <button class="reader-btn p-2 rounded-lg" data-font="up" aria-label="Larger Font">${Icon('plus', 'w-4 h-4')}</button>
           </div>
-          <!-- TOC Toggle -->
-          <button id="btn-toc" class="glass-pane p-2 specular interactive" aria-label="Table of Contents"><i data-lucide="list" class="w-5 h-5"></i></button>
+          <button id="btn-toc" class="glass p-2 specular interactive" aria-label="Table of Contents">${Icon('list', 'w-5 h-5')}</button>
         </div>
       </header>
-
-      <!-- Body -->
       <div class="flex-1 flex overflow-hidden relative">
-        <!-- TOC Sidebar -->
-        <aside id="toc-sidebar" class="w-64 glass-pane-elevated border-r border-glass-border flex flex-col hidden lg:flex transform transition-transform duration-300" style="transform: translateX(-100%);">
-          <div class="p-3 border-b border-glass-border flex items-center justify-between">
-            <h3 class="font-medium">Contents</h3>
-            <button id="btn-close-toc" class="p-1 rounded hover:bg-white/5" aria-label="Close TOC"><i data-lucide="x" class="w-4 h-4"></i></button>
-          </div>
-          <nav class="flex-1 overflow-y-auto glass-scroll p-3 space-y-1" id="toc-list">
-            ${r.toc.length ? r.toc.map((item, i) => `<a href="#" class="toc-link block px-3 py-2 rounded-lg text-sm hover:bg-white/5 text-muted-foreground hover:text-white transition-colors" data-href="${item.href}" data-index="${i}">${item.label}</a>`).join('') : '<p class="text-muted-foreground text-sm p-4">No chapters found</p>'}
-          </nav>
-        </aside>
-
-        <!-- Content Area -->
+        <aside id="toc-sidebar" class="w-64 glass-strong border-r border-glass-border flex flex-col hidden lg:flex transform transition-transform duration-300" style="transform: translateX(-100%);"><div class="p-3 border-b border-glass-border flex items-center justify-between"><h3 class="font-medium">Contents</h3><button id="btn-close-toc" class="p-1 rounded hover:bg-white/5" aria-label="Close TOC">${Icon('x', 'w-4 h-4')}</button></div><nav class="flex-1 overflow-y-auto glass-scroll p-3 space-y-1" id="toc-list">${r.toc.length ? r.toc.map((item, i) => `<a href="#" class="toc-link block px-3 py-2 rounded-lg text-sm hover:bg-white/5 text-muted-foreground hover:text-white transition-colors" data-href="${item.href}" data-index="${i}">${item.label}</a>`).join('') : '<p class="text-muted-foreground text-sm p-4">No chapters found</p>'}</nav></aside>
         <div class="flex-1 flex flex-col overflow-hidden" id="reader-content-wrapper">
-           <!-- PDF Canvas Container or EPUB Iframe Container -->
-           <div id="reader-content" class="flex-1 overflow-auto relative" style="background: var(--bg-base);">
-             <div class="absolute inset-0 flex items-center justify-center text-muted-foreground" id="reader-loading">
-               <div class="text-center"><div class="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div><p>Loading textbook...</p></div>
-             </div>
-           </div>
-           <!-- Progress Bar Bottom -->
-           <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-pink-500 origin-left transform transition-transform duration-300" id="progress-bar" style="transform: scaleX(${r.percentage || 0}%)"></div>
+          <div id="reader-content" class="flex-1 overflow-auto relative" style="background: var(--bg-base);"><div class="absolute inset-0 flex items-center justify-center text-muted-foreground" id="reader-loading"><div class="text-center"><div class="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div><p>Loading textbook...</p></div></div></div>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-pink-500 origin-left transform transition-transform duration-300" id="progress-bar" style="transform: scaleX(${r.percentage || 0}%)"></div>
         </div>
       </div>
     </div>
@@ -818,41 +492,37 @@ function renderReaderOverlay() {
 }
 
 // ==========================================
-// EVENT BINDING & LOGIC
+// EVENT BINDING
 // ==========================================
 function bindEvents() {
-  // Sidebar Toggle
+  // Sidebar
   document.getElementById('btn-toggle-sidebar')?.addEventListener('click', () => setState({ sidebarCollapsed: !state.sidebarCollapsed }));
   document.getElementById('btn-mobile-menu')?.addEventListener('click', () => setState({ sidebarOpen: !state.sidebarOpen }));
   
   // Navigation
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
-    const route = btn.dataset.route;
-    navigate(route);
-    if (window.innerWidth < 1024) setState({ sidebarOpen: false });
-  }));
-
-  // Theme Toggle (Sidebar)
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => { navigate(btn.dataset.route); if (window.innerWidth < 1024) setState({ sidebarOpen: false }); }));
+  
+  // Theme
   document.getElementById('btn-theme')?.addEventListener('click', cycleTheme);
+  document.querySelectorAll('.theme-option').forEach(btn => btn.addEventListener('click', () => setState({ theme: btn.dataset.theme })));
 
   // Upload
   document.getElementById('btn-upload')?.addEventListener('click', () => document.getElementById('file-input').click());
   document.getElementById('file-input')?.addEventListener('change', handleFiles);
 
-  // Action Buttons (Dashboard)
+  // Actions
   document.querySelectorAll('.action-btn').forEach(btn => btn.addEventListener('click', () => handleAction(btn.dataset.action)));
 
-  // Library Cards
-  document.querySelectorAll('[data-action="read"]').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openReader(btn.dataset.bookId); }));
-  document.querySelectorAll('[data-action="delete"]').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); confirmDelete(btn.dataset.bookId); }));
+  // Book Cards (Event Delegation for dynamic content)
+  document.getElementById('continue-grid')?.addEventListener('click', handleBookAction);
+  document.getElementById('library-grid')?.addEventListener('click', handleBookAction);
   document.querySelectorAll('[data-action="resume"]').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openReader(btn.dataset.bookId); }));
 
   // Settings
-  document.querySelectorAll('.theme-option').forEach(btn => btn.addEventListener('click', () => setState({ theme: btn.dataset.theme })));
   document.getElementById('btn-export')?.addEventListener('click', exportLibrary);
   document.getElementById('btn-clear')?.addEventListener('click', clearAllData);
 
-  // Reader Controls
+  // Reader
   document.getElementById('btn-close-reader')?.addEventListener('click', closeReader);
   document.getElementById('btn-toc')?.addEventListener('click', () => toggleTOC(true));
   document.getElementById('btn-close-toc')?.addEventListener('click', () => toggleTOC(false));
@@ -864,77 +534,50 @@ function bindEvents() {
   // Global Search
   document.getElementById('global-search')?.addEventListener('input', debounce(handleGlobalSearch, 300));
 
-  // Click outside TOC to close (Mobile)
-  document.getElementById('reader-overlay')?.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('reader-overlay')) closeReader();
-  });
+  // Click outside TOC/Reader
+  document.getElementById('reader-overlay')?.addEventListener('click', (e) => { if (e.target === document.getElementById('reader-overlay')) closeReader(); });
 }
 
-// --- Navigation ---
-function navigate(route) {
-  const views = { '/dashboard': 'dashboard', '/library': 'library', '/progress': 'progress', '/settings': 'settings' };
-  setState({ view: views[route] || 'dashboard' });
+function handleBookAction(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  e.stopPropagation();
+  const id = btn.dataset.bookId;
+  if (btn.dataset.action === 'read') openReader(id);
+  else if (btn.dataset.action === 'delete') confirmDelete(id);
 }
 
-// --- Theme ---
-function cycleTheme() {
-  const themes = ['dark', 'light', 'sepia'];
-  const i = themes.indexOf(state.theme);
-  setState({ theme: themes[(i + 1) % themes.length] });
-}
-function setReaderTheme(t) {
-  state.reader.theme = t;
-  document.documentElement.classList.toggle('sepia', t === 'sepia');
-  document.documentElement.classList.toggle('light', t === 'light');
-  render(); // Re-render reader content with new theme
-}
+// ==========================================
+// LOGIC IMPLEMENTATIONS
+// ==========================================
+function navigate(route) { const views = { '/dashboard': 'dashboard', '/library': 'library', '/progress': 'progress', '/settings': 'settings' }; setState({ view: views[route] || 'dashboard' }); }
+function cycleTheme() { const themes = ['dark', 'light', 'sepia']; const i = themes.indexOf(state.theme); setState({ theme: themes[(i + 1) % themes.length] }); }
+function setReaderTheme(t) { state.reader.theme = t; document.documentElement.classList.toggle('sepia', t === 'sepia'); document.documentElement.classList.toggle('light', t === 'light'); render(); }
 
-// --- File Handling ---
 async function handleFiles(e) {
-  const files = Array.from(e.target.files);
-  if (!files.length) return;
-  e.target.value = ''; // Reset input
-  
-  for (const file of files) {
-    if (file.size > 500 * 1024 * 1024) { alert(`${file.name} is too large (>500MB).`); continue; }
-    await parseTextbook(file);
-  }
+  const files = Array.from(e.target.files); if (!files.length) return; e.target.value = '';
+  for (const file of files) { if (file.size > 500 * 1024 * 1024) { alert(`${file.name} is too large (>500MB).`); continue; } await parseTextbook(file); }
   await refreshBooks();
 }
 
-async function refreshBooks() {
-  const books = await getBooks();
-  setState({ books, stats: { ...state.stats, totalBooks: books.length } });
-}
+async function refreshBooks() { const books = await getBooks(); setState({ books, stats: { ...state.stats, totalBooks: books.length } }); updateStorageUI(); }
 
-// --- Actions ---
-function handleAction(action) {
-  if (action === 'upload') document.getElementById('file-input').click();
-  else if (action === 'import') document.getElementById('import-file').click();
-  else if (action === 'export') exportLibrary();
-}
+function handleAction(action) { if (action === 'upload') document.getElementById('file-input').click(); else if (action === 'import') document.getElementById('import-file').click(); else if (action === 'export') exportLibrary(); }
 
 async function exportLibrary() {
-  const books = await getBooks();
-  const progress = await getDB().then(db => db.getAll(STORE_PROGRESS));
-  const data = { books: books.map(b => ({...b, fileBlob: undefined})), progress, exportedAt: Date.now() }; // Exclude blobs for JSON portability
+  const books = await getBooks(); const db = await getDB(); const progress = await db.getAll('progress');
+  const data = { books: books.map(b => ({...b, fileBlob: undefined})), progress, exportedAt: Date.now() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `snaplearn-backup-${Date.now()}.json`; a.click();
-  URL.revokeObjectURL(url);
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `snaplearn-backup-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url);
 }
 
 window.handleImport = async (e) => {
   const file = e.target.files[0]; if (!file) return;
-  const text = await file.text();
   try {
-    const data = JSON.parse(text);
-    const db = await getDB();
-    const tx = db.transaction([STORE_BOOKS, STORE_PROGRESS], 'readwrite');
-    // Note: This import restores METADATA only. Actual file blobs are NOT restored via JSON.
-    // For full backup, use IndexedDB export (idb dump) or File System Access API (not in this scope).
-    for (const b of data.books || []) await tx.objectStore(STORE_BOOKS).put({...b, fileBlob: null, cover: b.cover}); 
-    for (const p of data.progress || []) await tx.objectStore(STORE_PROGRESS).put(p);
+    const data = JSON.parse(await file.text());
+    const db = await getDB(); const tx = db.transaction(['books', 'progress'], 'readwrite');
+    for (const b of data.books || []) await tx.objectStore('books').put({...b, fileBlob: null, cover: b.cover});
+    for (const p of data.progress || []) await tx.objectStore('progress').put(p);
     await tx.done;
     alert('Metadata imported! Note: Actual book files must be re-uploaded.');
     await refreshBooks();
@@ -942,27 +585,152 @@ window.handleImport = async (e) => {
   e.target.value = '';
 }
 
-async function clearAllData() {
-  if (!confirm('DELETE ALL BOOKS AND PROGRESS? This cannot be undone.')) return;
-  const db = await getDB();
-  await db.clear(STORE_BOOKS);
-  await db.clear(STORE_PROGRESS);
-  await refreshBooks();
-  setState({ view: 'library' });
-}
+async function clearAllData() { if (!confirm('DELETE ALL BOOKS AND PROGRESS? This cannot be undone.')) return; const db = await getDB(); await db.clear('books'); await db.clear('progress'); await refreshBooks(); setState({ view: 'library' }); }
+async function confirmDelete(id) { if (!confirm('Delete this textbook permanently?')) return; await deleteBook(id); await refreshBooks(); }
 
-async function confirmDelete(id) {
-  if (!confirm('Delete this textbook permanently?')) return;
-  await deleteBook(id);
-  await refreshBooks();
-}
-
-// --- Reader Logic ---
+// ==========================================
+// READER LOGIC (Simplified for Stability)
+// ==========================================
 async function openReader(bookId) {
-  const book = await getBook(bookId);
-  if (!book) return;
+  const book = await getBook(bookId); if (!book) return;
+  setState({ view: 'reader', selectedBook: book, reader: { ...state.reader, type: book.type, toc: book.toc || [], percentage: 0 } });
+  // Render overlay first, then load content
+  await new Promise(r => requestAnimationFrame(r)); 
+  loadReaderContent(book);
+}
+
+function closeReader() { 
+  // Cleanup PDF/Epub instances
+  if (state.reader.pdfDoc) { state.reader.pdfDoc.destroy(); state.reader.pdfDoc = null; }
+  if (state.reader.epubRendition) { state.reader.epubRendition.destroy(); state.reader.epubRendition = null; }
+  if (state.reader.epubBook) { state.reader.epubBook.destroy(); state.reader.epubBook = null; }
+  setState({ view: 'library', selectedBook: null, reader: { ...state.reader, type: null, toc: [], pdfDoc: null, epubRendition: null, epubBook: null } }); 
+}
+
+function toggleTOC(open) { const el = document.getElementById('toc-sidebar'); if (el) el.style.transform = open ? 'translateX(0)' : 'translateX(-100%)'; }
+
+async function loadReaderContent(book) {
+  const container = document.getElementById('reader-content');
+  const loading = document.getElementById('reader-loading');
+  if (!container) return;
   
-  setState({ 
-    view: 'reader', 
-    selectedBook: book, 
-    reader: { ...state.reader, type: book.type,
+  try {
+    if (book.type === 'pdf') await renderPDF(book, container, loading);
+    else if (book.type === 'epub') await renderEPUB(book, container, loading);
+    else if (book.type === 'markdown') renderMarkdown(book, container, loading);
+  } catch (e) { console.error("Reader Load Error", e); container.innerHTML = `<div class="p-8 text-center text-red-400">Failed to load: ${e.message}</div>`; if(loading) loading.remove(); }
+}
+
+async function renderPDF(book, container, loadingEl) {
+  const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/+esm');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+  
+  const arrayBuffer = await book.fileBlob.arrayBuffer();
+  const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  state.reader.pdfDoc = pdfDoc;
+  state.reader.totalPages = pdfDoc.numPages;
+  
+  if (loadingEl) loadingEl.remove();
+  
+  // Render all pages (simple implementation, virtualized would be better for 1000+ pages)
+  const frag = document.createDocumentFragment();
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 1.5 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    canvas.className = 'mx-auto my-4 shadow-[var(--shadow-glass)] rounded-lg';
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    frag.appendChild(canvas);
+  }
+  container.appendChild(frag);
+  container.classList.add('px-8', 'py-8');
+  setupScrollTracking(container, pdfDoc.numPages);
+}
+
+async function renderEPUB(book, container, loadingEl) {
+  const EpubModule = await import('https://cdn.jsdelivr.net/npm/epubjs@0.3.93/+esm');
+  const Epub = EpubModule.default || EpubModule;
+  const url = URL.createObjectURL(book.fileBlob);
+  const epubBook = Epub(url);
+  await epubBook.ready;
+  state.reader.epubBook = epubBook;
+  
+  const rendition = epubBook.renderTo('reader-content', { width: '100%', height: '100%', spread: 'auto', minSpreadWidth: 800 });
+  state.reader.epubRendition = rendition;
+  
+  rendition.on('rendered', (section) => {
+    if (loadingEl) loadingEl.remove();
+    // Update progress
+    const loc = epubBook.locations.locationFromCfi(section.contents.cfi);
+    const perc = loc ? (loc.start / loc.total) * 100 : 0;
+    updateProgressBar(perc);
+  });
+  
+  rendition.on('relocated', (loc) => { saveProgress(book.id, loc.startCfi, (loc.location.start / loc.location.total) * 100); });
+  
+  // Restore progress
+  const prog = await getProgress(book.id);
+  if (prog?.location) rendition.display(prog.location);
+  else rendition.display();
+}
+
+function renderMarkdown(book, container, loadingEl) {
+  if (loadingEl) loadingEl.remove();
+  container.classList.add('reader-view', 'p-8', 'max-w-3xl', 'mx-auto');
+  const { marked } = await import('https://cdn.jsdelivr.net/npm/marked@12/+esm');
+  const DOMPurify = (await import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')).default;
+  container.innerHTML = DOMPurify.sanitize(marked.parse(await book.fileBlob.text()));
+  setupScrollTracking(container, 1);
+}
+
+function setupScrollTracking(container, totalPages) {
+  container.addEventListener('scroll', debounce(() => {
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight - container.clientHeight;
+    const perc = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    updateProgressBar(perc);
+    if (state.selectedBook) saveProgress(state.selectedBook.id, { scrollTop }, perc);
+  }, 200), { passive: true });
+}
+
+function updateProgressBar(perc) { const bar = document.getElementById('progress-bar'); if (bar) bar.style.transform = `scaleX(${Math.min(100, Math.max(0, perc))}%)`; }
+
+function adjustFont(dir) { const step = 10; const newSize = Math.max(50, Math.min(200, state.reader.fontSize + (dir === 'up' ? step : -step))); setState({ reader: { ...state.reader, fontSize: newSize } }); document.getElementById('reader-content').style.fontSize = newSize + '%'; }
+
+function handleReaderSearch() { const q = document.getElementById('reader-search').value; state.reader.searchQuery = q; alert(`Search for "${q}" - Implement full text search in reader content`); }
+function navigateTOC(href, index) { if (state.reader.epubRendition) state.reader.epubRendition.display(href); toggleTOC(false); }
+function handleGlobalSearch() { const q = document.getElementById('global-search').value.toLowerCase(); const filtered = state.books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)); document.getElementById('library-grid').innerHTML = filtered.length ? filtered.map(b => BookCard(b, false)).join('') : EmptyState('No Results', `No books matching "${q}"`, 'search'); }
+function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
+
+async function updateStorageUI() {
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      const est = await navigator.storage.estimate();
+      const used = est.usage || 0; const quota = est.quota || 1;
+      const pct = (used / quota) * 100;
+      const usedEl = document.getElementById('storage-used'); const barEl = document.getElementById('storage-bar');
+      if (usedEl) usedEl.textContent = `${formatBytes(used)} / ${formatBytes(quota)}`;
+      if (barEl) barEl.style.width = `${Math.min(100, pct)}%`;
+    }
+  } catch(e) { /* ignore */ }
+}
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+async function init() {
+  try {
+    await refreshBooks();
+    // Subscribe to state changes for re-render
+    subscribe(render);
+    // Initial render
+    render();
+  } catch (e) { showFatalError(e); }
+}
+
+init();
+</script>
+</body>
+</html>
