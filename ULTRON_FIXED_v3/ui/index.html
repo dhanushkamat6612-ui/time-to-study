@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ULTRON</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div id="grid"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="diamond"></span>
+    <div><b>ULTRON</b><small>UNIFIED LOGIC &amp; TASK RESPONSE OPERATIONS NODE</small></div>
+  </div>
+  <div class="topcenter">
+    <div class="tstat"><label>SYSTEM STATUS</label><span id="sysStatus">● CONNECTING</span></div>
+    <div class="tstat"><label>LOCAL TIME</label><span id="clock">--:--:--</span></div>
+  </div>
+  <div class="topright">
+    <button class="icobtn" id="btnAlerts" title="Notifications">◔<span class="badge" id="alertBadge"></span></button>
+    <button class="icobtn" id="btnSettings" title="Capabilities">⚙</button>
+    <div class="pill" id="aiMode">LOCAL</div>
+  </div>
+</header>
+
+<h1 class="title"><span>U L T R O N</span></h1>
+
+<main class="stage">
+  <!-- LEFT -->
+  <section class="col left">
+    <div class="panel">
+      <div class="phead"><span>SYSTEM //</span><i>PROCESSOR</i></div>
+      <div class="bigmetric"><label>CPU Load</label><div class="val"><b id="cpuVal">--</b><u>%</u></div></div>
+      <canvas id="cpuBars" height="54"></canvas>
+      <div class="dual">
+        <div class="cell"><label>Temperature</label><b id="cpuTemp">—</b></div>
+        <div class="cell"><label>Cores</label><b id="cpuCores">—</b></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><span>SYSTEM //</span><i>RT-MONITOR</i></div>
+      <div class="bar"><span>Memory</span><em id="ramTxt">—</em><div class="track"><i id="ramBar"></i></div></div>
+      <div class="bar"><span>Storage</span><em id="diskTxt">—</em><div class="track"><i id="diskBar"></i></div></div>
+      <div class="bar"><span>GPU</span><em id="gpuTxt">—</em><div class="track"><i id="gpuBar"></i></div></div>
+      <div class="bar"><span>Processes</span><em id="procTxt">—</em><div class="track"><i id="procBar"></i></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><span>SYSTEM //</span><i>UPLINK</i></div>
+      <div class="netwrap">
+        <div class="netring" id="netRing"><span id="netState">LINK</span></div>
+        <div class="netnums">
+          <div><label>DOWN</label><b id="netDown">0.00</b> MB/s</div>
+          <div><label>UP</label><b id="netUp">0.00</b> MB/s</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quickwrap">
+      <div class="radial" id="radial">
+        <button class="rnode" style="--a:-90deg"  data-cmd="Open my documents folder" title="Documents">🗂</button>
+        <button class="rnode" style="--a:-30deg"  data-cmd="What is using my CPU right now?" title="CPU">⚡</button>
+        <button class="rnode" style="--a:30deg"   data-cmd="Summarize what is happening on my computer" title="Summary">◈</button>
+        <button class="rnode" style="--a:90deg"   data-cmd="Why is my computer slow?" title="Diagnose">⌬</button>
+        <button class="rnode" style="--a:150deg"  data-cmd="Check my Windows Security status" title="Security">🛡</button>
+        <button class="rnode" style="--a:210deg"  data-cmd="Show me what is running in the background" title="Processes">π</button>
+        <div class="rcenter">•••</div>
+      </div>
+      <span class="qlabel">Quick Access</span>
+    </div>
+  </section>
+
+  <!-- CENTER -->
+  <section class="col center">
+    <div class="reactor">
+      <canvas id="core"></canvas>
+      <div class="coremark"><svg viewBox="0 0 40 40"><path d="M8 6 L20 2 L32 6 L26 30 L20 38 L14 30 Z"/></svg><small>ULTRON</small></div>
+    </div>
+
+    <div id="convo" class="convo"></div>
+
+    <form class="cmdbar" id="cmdForm" autocomplete="off">
+      <span class="wave" id="wave"></span>
+      <input id="cmdInput" placeholder="AWAITING COMMAND…" />
+      <button type="button" class="mic" id="micBtn" title="Voice layer (optional module)">◉</button>
+    </form>
+  </section>
+
+  <!-- RIGHT -->
+  <section class="col right">
+    <div class="panel">
+      <div class="phead"><span>SYSTEM //</span><i>OVERVIEW</i></div>
+      <div class="dual">
+        <div class="cell"><label>UPTIME</label><b id="upTime">—</b></div>
+        <div class="cell"><label>MONITORED</label><b id="monTime">0m</b></div>
+      </div>
+      <div class="ctrls">
+        <button class="ctrl" data-cmd="Check my Windows Security status">🛡</button>
+        <button class="ctrl" data-cmd="Which application is using the most RAM?">⚡</button>
+        <button class="ctrl" data-cmd="When was my CPU usage highest?">▮▮</button>
+        <button class="ctrl" id="proBtn" data-cmd="Monitor my computer while I work">⏻</button>
+      </div>
+    </div>
+
+    <div class="panel grow">
+      <div class="phead"><span>SYSTEM //</span><i>RT-LOG</i></div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><span>SYSTEM //</span><i>WATCHERS</i></div>
+      <div class="watchers" id="watchers"><span class="dim">No active monitors.</span></div>
+    </div>
+
+    <button class="recent" id="recentBtn"><span>◷</span> Recent Activity <b>›</b></button>
+  </section>
+</main>
+
+<!-- overlays -->
+<div class="drawer" id="drawer">
+  <div class="dhead"><b id="drawerTitle">RECENT ACTIVITY</b><button id="drawerClose">✕</button></div>
+  <div class="dbody" id="drawerBody"></div>
+</div>
+
+<div class="modalwrap" id="modal">
+  <div class="modal">
+    <div class="mlevel" id="mLevel">LEVEL 2</div>
+    <h3 id="mTitle">Confirmation required</h3>
+    <p id="mBody"></p>
+    <div class="mbtns">
+      <button class="deny" id="mDeny">Decline</button>
+      <button class="always" id="mAlways">Allow this session</button>
+      <button class="ok" id="mOk">Approve</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<script src="/static/ultron.js"></script>
+</body>
+</html>
