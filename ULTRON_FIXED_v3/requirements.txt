@@ -1,8 +1,0 @@
-fastapi>=0.110
-uvicorn[standard]>=0.29
-psutil>=5.9
-httpx>=0.27
-anthropic>=0.34
-send2trash>=1.8
-pywin32>=306 ; sys_platform == "win32"
-nvidia-ml-py>=12.535 ; sys_platform == "win32"
