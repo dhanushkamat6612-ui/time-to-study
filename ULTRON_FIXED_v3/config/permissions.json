@@ -1,0 +1,24 @@
+{
+  "default_level": 2,
+  "levels": {
+    "app.open": 1, "app.list_running": 1, "browser.open_url": 1, "browser.search": 1,
+    "browser.open_tabs": 1, "browser.list_tabs": 1, "file.open_folder": 1, "file.list": 1,
+    "file.search": 1, "file.create_folder": 1, "file.create_file": 1,
+    "system.metrics": 1, "system.top_cpu": 1, "system.top_ram": 1, "system.why_slow": 1,
+    "system.peak": 1, "system.background": 1, "system.storage": 1, "system.network": 1,
+    "system.gpu": 1, "system.summary": 1, "system.info": 1,
+    "monitor.watch": 1, "monitor.list": 1, "monitor.cancel": 1, "monitor.session": 1,
+    "memory.remember": 1, "memory.recall": 1, "memory.list": 1, "memory.forget": 1,
+    "workflow.list": 1, "workflow.run": 1, "workflow.create": 1,
+    "security.status": 1, "security.threats": 1, "security.inspect_process": 1,
+    "notify.send": 1,
+
+    "app.close": 2, "process.kill": 2, "browser.close_tab": 2, "file.move": 2,
+    "file.organize": 2, "security.scan": 2, "win.empty_recycle_bin": 2,
+    "win.open_settings": 2, "workflow.delete": 2,
+
+    "file.delete": 3, "process.force_kill": 3, "security.quarantine": 3,
+    "win.run_powershell": 3, "app.install": 3
+  },
+  "never_allowed": ["disable_antivirus", "disable_firewall", "delete_system_files"]
+}
